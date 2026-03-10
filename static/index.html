@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wearit</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --border: #e0deda;
+    --text: #1a1916;
+    --muted: #8a8782;
+    --accent: #1a1916;
+    --radius: 4px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+  }
+
+  .wordmark {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+  }
+
+  .status-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+  }
+  .status-dot.ready   { background: #4caf50; }
+  .status-dot.loading { background: #ff9800; }
+  .status-dot.error   { background: #f44336; }
+
+  main {
+    flex: 1;
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .top-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* Pulsing badge while Claude classifies */
+  .detecting-badge {
+    display: none;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    color: #f9a825;
+    letter-spacing: 0;
+    text-transform: none;
+    font-family: 'DM Mono', monospace;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  .detecting-badge.visible { display: inline-block; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+
+  /* Green badge shown after successful classification */
+  .detected-badge {
+    display: none;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    color: #388e3c;
+    letter-spacing: 0;
+    text-transform: none;
+    font-family: 'DM Mono', monospace;
+  }
+  .detected-badge.visible { display: inline-block; }
+
+  /* Middle column flex split */
+  .middle-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .upper-panel-wrap {
+    flex: 1 1 100%;
+    display: flex;
+    flex-direction: column;
+    transition: flex 0.25s ease;
+  }
+
+  .lower-panel-wrap {
+    flex: 0 0 0%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: flex 0.25s ease, margin 0.25s ease;
+  }
+
+  .middle-col.show-lower .upper-panel-wrap { flex: 1 1 50%; }
+  .middle-col.show-lower .lower-panel-wrap {
+    flex: 1 1 50%;
+    margin-top: 20px;
+  }
+
+  .upper-panel-wrap .panel,
+  .lower-panel-wrap .panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .upload-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+    min-height: 80px;
+  }
+
+  .panel.fixed-ratio .upload-area,
+  .panel.fixed-ratio .result-area {
+    aspect-ratio: 3/4;
+    flex: none;
+  }
+
+  .upload-area:hover { background: #eeecea; }
+
+  .upload-area input[type="file"] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+  }
+
+  .upload-area img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+
+  .upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+  }
+
+  .upload-icon {
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .upload-hint {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    text-align: center;
+    padding: 0 16px;
+  }
+
+  .result-area {
+    aspect-ratio: 3/4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-area img { width: 100%; height: 100%; object-fit: cover; }
+
+  .result-placeholder {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  .progress-overlay {
+    display: none;
+    position: absolute; inset: 0;
+    background: rgba(245,244,240,0.92);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .progress-overlay.visible { display: flex; }
+
+  .spinner {
+    width: 28px; height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .progress-step {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .result-footer {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 52px;
+  }
+
+  .result-variants { display: flex; gap: 8px; flex: 1; }
+
+  .variant-thumb {
+    width: 36px; height: 48px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .variant-thumb.active { border-color: var(--accent); }
+
+  .download-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    display: none;
+  }
+
+  .download-btn:hover { background: var(--bg); }
+
+  .cached-badge {
+    display: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    color: #388e3c;
+    border-radius: 20px;
+  }
+
+  .controls { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  .controls-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .controls-row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; align-items: end; }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .field-hint { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 6px; }
+
+  /* Green glow on category seg when auto-detected */
+  .category-field.just-detected .seg-control {
+    box-shadow: 0 0 0 2px #c8e6c9;
+  }
+
+  .seg-control {
+    display: grid;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: box-shadow 0.4s;
+  }
+
+  .seg-control.cat-3  { grid-template-columns: 1fr 1fr 1fr; }
+  .seg-control.size-6 { grid-template-columns: repeat(6, 1fr); }
+  .seg-control.num-3  { grid-template-columns: 1fr 1fr 1fr; }
+
+  .seg-control input { display: none; }
+
+  .seg-control label {
+    padding: 8px 0;
+    text-align: center;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    color: var(--muted);
+    border-right: 1px solid var(--border);
+    transition: all 0.15s;
+    margin: 0; letter-spacing: 0; text-transform: none;
+  }
+
+  .seg-control label:last-of-type { border-right: none; }
+  .seg-control input:checked + label { background: var(--accent); color: white; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .toggle-label { font-size: 12px; font-family: 'DM Mono', monospace; }
+  .toggle-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .toggle {
+    width: 36px; height: 20px;
+    background: var(--border);
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .toggle.on { background: var(--accent); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    background: white;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: left 0.2s;
+  }
+
+  .toggle.on::after { left: 19px; }
+
+  .range-wrap { display: flex; align-items: center; gap: 12px; }
+
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  .range-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    width: 28px;
+    text-align: right;
+  }
+
+  .run-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .run-btn:hover    { opacity: 0.85; }
+  .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .error-msg {
+    display: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #f44336;
+    padding: 10px 14px;
+    background: #fff5f5;
+    border: 1px solid #ffd0d0;
+    border-radius: var(--radius);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="wordmark">wearit</span>
+  <span class="status-label">
+    <span class="status-dot" id="dot"></span>
+    <span id="status-text">checking...</span>
+  </span>
+</header>
+
+<main>
+  <div class="top-grid">
+
+    <!-- Column 1: Person -->
+    <div class="panel fixed-ratio">
+      <div class="panel-header">person</div>
+      <div class="upload-area">
+        <input type="file" accept="image/*" id="person-input">
+        <div class="upload-placeholder" id="person-placeholder">
+          <div class="upload-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+          </div>
+          <span class="upload-hint">upload photo</span>
+        </div>
+        <img id="person-preview" style="display:none">
+      </div>
+    </div>
+
+    <!-- Column 2: Middle — garment panels -->
+    <div class="middle-col" id="middle-col">
+
+      <div class="upper-panel-wrap">
+        <div class="panel" style="height:100%">
+          <div class="panel-header">
+            garment
+            <!-- badge group: detecting → auto-detected → category tag -->
+            <div style="display:flex;align-items:center;gap:6px">
+              <span class="detecting-badge" id="detecting-badge">detecting…</span>
+              <span class="detected-badge"  id="detected-badge">auto-detected</span>
+              <span class="panel-tag"       id="upper-tag">upper</span>
+            </div>
+          </div>
+          <div class="upload-area">
+            <input type="file" accept="image/*" id="garment-input">
+            <div class="upload-placeholder" id="garment-placeholder">
+              <div class="upload-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+              </div>
+              <span class="upload-hint">upload garment</span>
+            </div>
+            <img id="garment-preview" style="display:none">
+          </div>
+        </div>
+      </div>
+
+      <div class="lower-panel-wrap" id="lower-panel-wrap">
+        <div class="panel" style="height:100%">
+          <div class="panel-header">
+            lower garment
+            <span class="panel-tag">optional</span>
+          </div>
+          <div class="upload-area">
+            <input type="file" accept="image/*" id="lower-input">
+            <div class="upload-placeholder" id="lower-placeholder">
+              <div class="upload-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+              </div>
+              <span class="upload-hint">leave empty to keep original</span>
+            </div>
+            <img id="lower-preview" style="display:none">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Column 3: Result -->
+    <div class="panel fixed-ratio">
+      <div class="panel-header">
+        result
+        <span class="cached-badge" id="cached-badge">cached</span>
+      </div>
+      <div class="result-area" id="result-area">
+        <div class="result-placeholder" id="result-placeholder">result appears<br>here</div>
+        <img id="result-img" style="display:none">
+        <div class="progress-overlay" id="progress-overlay">
+          <div class="spinner"></div>
+          <div class="progress-step" id="progress-step">queued</div>
+        </div>
+      </div>
+      <div class="result-footer">
+        <div class="result-variants" id="result-variants"></div>
+        <a class="download-btn" id="download-btn" download="wearit.png">download</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Controls -->
+  <div class="panel">
+    <div class="controls">
+      <div class="controls-row">
+
+        <div class="field category-field" id="category-field">
+          <label>category</label>
+          <div class="seg-control cat-3" id="category-seg">
+            <input type="radio" name="category" id="cat-upper"   value="upper"   checked>
+            <label for="cat-upper">upper</label>
+            <input type="radio" name="category" id="cat-lower"   value="lower">
+            <label for="cat-lower">lower</label>
+            <input type="radio" name="category" id="cat-overall" value="overall">
+            <label for="cat-overall">overall</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>clothing size</label>
+          <div class="seg-control size-6">
+            <input type="radio" name="size" id="size-xs"  value="XS"><label for="size-xs">XS</label>
+            <input type="radio" name="size" id="size-s"   value="S" ><label for="size-s">S</label>
+            <input type="radio" name="size" id="size-m"   value="M" checked><label for="size-m">M</label>
+            <input type="radio" name="size" id="size-l"   value="L" ><label for="size-l">L</label>
+            <input type="radio" name="size" id="size-xl"  value="XL"><label for="size-xl">XL</label>
+            <input type="radio" name="size" id="size-xxl" value="XXL"><label for="size-xxl">XXL</label>
+          </div>
+          <div class="field-hint">affects garment fit looseness</div>
+        </div>
+
+      </div>
+
+      <div class="controls-row-3">
+        <div class="field">
+          <label>steps</label>
+          <div class="range-wrap">
+            <input type="range" id="steps" min="5" max="50" value="20">
+            <span class="range-val" id="steps-val">20</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>variations</label>
+          <div class="seg-control num-3">
+            <input type="radio" name="num_results" id="num-1" value="1" checked><label for="num-1">1</label>
+            <input type="radio" name="num_results" id="num-2" value="2"><label for="num-2">2</label>
+            <input type="radio" name="num_results" id="num-3" value="3"><label for="num-3">3</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>upscale</label>
+          <div class="toggle-row" onclick="toggleUpscale()">
+            <div>
+              <div class="toggle-label">2x upscale</div>
+              <div class="toggle-sub">Real-ESRGAN</div>
+            </div>
+            <div class="toggle on" id="upscale-indicator"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="run-btn" id="run-btn" disabled>run try-on</button>
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const API = '';
+  let upscaleOn = true;
+  let activeVariants = [];
+  let activeVariantIdx = 0;
+
+  const dot        = document.getElementById('dot');
+  const statusText = document.getElementById('status-text');
+
+  // ── health check ──────────────────────────────────────────────────────────
+  async function checkHealth() {
+    try {
+      const r = await fetch(`${API}/health`);
+      if (r.ok) { dot.className = 'status-dot ready'; statusText.textContent = 'ready'; }
+      else throw new Error();
+    } catch {
+      dot.className = 'status-dot error';
+      statusText.textContent = 'offline';
+    }
+  }
+  checkHealth();
+
+  // ── apply a category to the UI (called by auto-detect & manual click) ────
+  function applyCategory(val, animate = false) {
+    const radio = document.getElementById(`cat-${val}`);
+    if (!radio) return;
+
+    // Explicitly uncheck all then check target — avoids browser quirks
+    document.querySelectorAll('input[name="category"]').forEach(r => { r.checked = false; });
+    radio.checked = true;
+
+    const middleCol = document.getElementById('middle-col');
+    const tag       = document.getElementById('upper-tag');
+
+    if (val === 'overall') {
+      middleCol.classList.add('show-lower');
+      tag.textContent = 'overall';
+    } else {
+      middleCol.classList.remove('show-lower');
+      tag.textContent = val;
+      document.getElementById('lower-input').value = '';
+      document.getElementById('lower-preview').style.display = 'none';
+      document.getElementById('lower-placeholder').style.display = 'flex';
+    }
+
+    if (animate) {
+      const field = document.getElementById('category-field');
+      field.classList.add('just-detected');
+      setTimeout(() => field.classList.remove('just-detected'), 1800);
+    }
+  }
+
+  // Reliable category reader — iterates instead of using :checked selector
+  function getSelectedCategory() {
+    for (const r of document.querySelectorAll('input[name="category"]')) {
+      if (r.checked) return r.value;
+    }
+    return 'upper';
+  }
+
+  // ── call /detect-category right after garment upload ─────────────────────
+  async function autoDetectCategory(file) {
+    const detectingBadge = document.getElementById('detecting-badge');
+    const detectedBadge  = document.getElementById('detected-badge');
+
+    // Show pulsing "detecting…" badge
+    detectingBadge.classList.add('visible');
+    detectedBadge.classList.remove('visible');
+
+    try {
+      const fd = new FormData();
+      fd.append('garment', file);
+      const res = await fetch(`${API}/detect-category`, { method: 'POST', body: fd });
+      if (!res.ok) throw new Error('detect failed');
+      const { category } = await res.json();
+
+      applyCategory(category, true);
+
+      detectingBadge.classList.remove('visible');
+      detectedBadge.classList.add('visible');
+      // Fade out "auto-detected" badge after 3 s
+      setTimeout(() => detectedBadge.classList.remove('visible'), 3000);
+    } catch {
+      // Silent fallback — just hide the badge, leave category as-is
+      detectingBadge.classList.remove('visible');
+    }
+  }
+
+  // ── upload helpers ────────────────────────────────────────────────────────
+  function setupUpload(inputId, previewId, placeholderId, cb) {
+    document.getElementById(inputId).addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const preview = document.getElementById(previewId);
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+      document.getElementById(placeholderId).style.display = 'none';
+      if (cb) cb(file);
+    });
+  }
+
+  setupUpload('person-input', 'person-preview', 'person-placeholder', () => checkReady());
+  setupUpload('lower-input',  'lower-preview',  'lower-placeholder',  null);
+
+  // Garment: show preview + kick off auto-detect
+  setupUpload('garment-input', 'garment-preview', 'garment-placeholder', (file) => {
+    checkReady();
+    autoDetectCategory(file);
+  });
+
+  // ── manual category change ────────────────────────────────────────────────
+  document.querySelectorAll('input[name="category"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const val = document.querySelector('input[name="category"]:checked').value;
+      // If user overrides manually, hide the auto-detected badge
+      document.getElementById('detected-badge').classList.remove('visible');
+      applyCategory(val);
+    });
+  });
+
+  // ── sync middle column height to person panel ─────────────────────────────
+  function syncMiddleHeight() {
+    const personPanel = document.querySelector('.panel.fixed-ratio');
+    const middleCol   = document.getElementById('middle-col');
+    if (personPanel && middleCol) {
+      middleCol.style.height = personPanel.offsetHeight + 'px';
+    }
+  }
+  window.addEventListener('resize', syncMiddleHeight);
+  window.addEventListener('load',   syncMiddleHeight);
+  setTimeout(syncMiddleHeight, 100);
+
+  // ── steps slider ──────────────────────────────────────────────────────────
+  document.getElementById('steps').addEventListener('input', function () {
+    document.getElementById('steps-val').textContent = this.value;
+  });
+
+  // ── upscale toggle ────────────────────────────────────────────────────────
+  function toggleUpscale() {
+    upscaleOn = !upscaleOn;
+    document.getElementById('upscale-indicator').className = 'toggle' + (upscaleOn ? ' on' : '');
+  }
+
+  // ── enable run button when both images are present ────────────────────────
+  function checkReady() {
+    const hasPerson  = !!document.getElementById('person-input').files[0];
+    const hasGarment = !!document.getElementById('garment-input').files[0];
+    document.getElementById('run-btn').disabled = !(hasPerson && hasGarment);
+  }
+
+  // ── variant thumbnails ────────────────────────────────────────────────────
+  function showVariant(idx) {
+    activeVariantIdx = idx;
+    const img = document.getElementById('result-img');
+    img.src = activeVariants[idx].image;
+    img.style.display = 'block';
+    document.getElementById('result-placeholder').style.display = 'none';
+    document.getElementById('download-btn').href  = activeVariants[idx].image;
+    document.getElementById('download-btn').style.display = 'block';
+    document.getElementById('cached-badge').style.display =
+      activeVariants[idx].cached ? 'inline-block' : 'none';
+    document.querySelectorAll('.variant-thumb').forEach((t, i) => {
+      t.className = 'variant-thumb' + (i === idx ? ' active' : '');
+    });
+  }
+
+  function renderVariants() {
+    const container = document.getElementById('result-variants');
+    container.innerHTML = '';
+    if (activeVariants.length <= 1) return;
+    activeVariants.forEach((v, i) => {
+      const img = document.createElement('img');
+      img.src = v.image;
+      img.className = 'variant-thumb' + (i === activeVariantIdx ? ' active' : '');
+      img.onclick = () => showVariant(i);
+      container.appendChild(img);
+    });
+  }
+
+  // ── SSE job polling ───────────────────────────────────────────────────────
+  function pollJob(jobId, index, total) {
+    return new Promise((resolve, reject) => {
+      const es     = new EventSource(`${API}/stream/${jobId}`);
+      const stepEl = document.getElementById('progress-step');
+      es.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        if (data.status === 'pending') {
+          stepEl.textContent = total > 1 ? `queued (${index+1}/${total})` : 'queued';
+        } else if (data.status === 'processing') {
+          stepEl.textContent = total > 1 ? `${data.step} (${index+1}/${total})` : data.step;
+        } else if (data.status === 'done') {
+          es.close(); resolve({ image: data.image, cached: data.cached });
+        } else if (data.status === 'error') {
+          es.close(); reject(new Error(data.detail || 'inference error'));
+        }
+      };
+      es.onerror = () => { es.close(); reject(new Error('connection lost')); };
+    });
+  }
+
+  // ── run try-on ────────────────────────────────────────────────────────────
+  document.getElementById('run-btn').addEventListener('click', async () => {
+    const runBtn      = document.getElementById('run-btn');
+    const errorMsg    = document.getElementById('error-msg');
+    const overlay     = document.getElementById('progress-overlay');
+    const downloadBtn = document.getElementById('download-btn');
+
+    errorMsg.style.display = 'none';
+    downloadBtn.style.display = 'none';
+    document.getElementById('result-variants').innerHTML = '';
+    document.getElementById('cached-badge').style.display = 'none';
+    overlay.classList.add('visible');
+    runBtn.disabled        = true;
+    dot.className          = 'status-dot loading';
+    statusText.textContent = 'processing...';
+    activeVariants = [];
+
+    const form = new FormData();
+    form.append('person',      document.getElementById('person-input').files[0]);
+    form.append('garment',     document.getElementById('garment-input').files[0]);
+    form.append('category',    getSelectedCategory());
+    form.append('size',        document.querySelector('input[name="size"]:checked').value);
+    form.append('steps',       document.getElementById('steps').value);
+    form.append('num_results', document.querySelector('input[name="num_results"]:checked').value);
+    form.append('use_upscale', upscaleOn ? 'true' : 'false');
+
+    const lowerFile = document.getElementById('lower-input').files[0];
+    if (lowerFile) form.append('lower_garment', lowerFile);
+
+    try {
+      const r    = await fetch(`${API}/tryon`, { method: 'POST', body: form });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || 'server error');
+
+      for (let i = 0; i < data.job_ids.length; i++) {
+        const result = await pollJob(data.job_ids[i], i, data.job_ids.length);
+        activeVariants.push(result);
+        showVariant(activeVariants.length - 1);
+        renderVariants();
+      }
+
+      dot.className          = 'status-dot ready';
+      statusText.textContent = 'ready';
+    } catch (err) {
+      errorMsg.textContent   = err.message;
+      errorMsg.style.display = 'block';
+      dot.className          = 'status-dot error';
+      statusText.textContent = 'error';
+    } finally {
+      overlay.classList.remove('visible');
+      runBtn.disabled = false;
+      checkReady();
+    }
+  });
+</script>
+</body>
+</html>

@@ -20,7 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static",   StaticFiles(directory="static"),   name="static")
+app.mount("/wardrobe", StaticFiles(directory="wardrobe"), name="wardrobe")
 
 # ── Bedrock client (uses EC2 IAM role — no API key needed) ───────────────────
 _bedrock_runtime = None

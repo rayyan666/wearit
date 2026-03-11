@@ -10,11 +10,11 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #f5f4f0;
-    --surface: #ffffff;
+    --bg:     #f5f4f0;
+    --surface:#ffffff;
     --border: #e0deda;
-    --text: #1a1916;
-    --muted: #8a8782;
+    --text:   #1a1916;
+    --muted:  #8a8782;
     --accent: #1a1916;
     --radius: 4px;
   }
@@ -28,21 +28,49 @@
     flex-direction: column;
   }
 
+  /* ── Header ─────────────────────────────────────────────────────────────── */
   header {
-    padding: 24px 40px;
+    padding: 22px 40px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
     background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
 
   .wordmark {
     font-family: 'DM Mono', monospace;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 500;
     letter-spacing: -0.5px;
   }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  /* Wardrobe trigger in header */
+  .wardrobe-trigger {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .wardrobe-trigger:hover { background: var(--bg); color: var(--text); border-color: var(--text); }
 
   .status-label {
     font-family: 'DM Mono', monospace;
@@ -63,9 +91,10 @@
   .status-dot.loading { background: #ff9800; }
   .status-dot.error   { background: #f44336; }
 
+  /* ── Layout ──────────────────────────────────────────────────────────────── */
   main {
     flex: 1;
-    padding: 40px;
+    padding: 36px 40px;
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
@@ -87,7 +116,7 @@
   }
 
   .panel-header {
-    padding: 14px 18px;
+    padding: 13px 18px;
     border-bottom: 1px solid var(--border);
     font-family: 'DM Mono', monospace;
     font-size: 11px;
@@ -110,7 +139,6 @@
     text-transform: none;
   }
 
-  /* Pulsing badge while Claude classifies */
   .detecting-badge {
     display: none;
     font-size: 10px;
@@ -126,9 +154,8 @@
   }
   .detecting-badge.visible { display: inline-block; }
 
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
 
-  /* Green badge shown after successful classification */
   .detected-badge {
     display: none;
     font-size: 10px;
@@ -143,7 +170,7 @@
   }
   .detected-badge.visible { display: inline-block; }
 
-  /* Middle column flex split */
+  /* ── Middle column flex split ────────────────────────────────────────────── */
   .middle-col {
     display: flex;
     flex-direction: column;
@@ -166,10 +193,7 @@
   }
 
   .middle-col.show-lower .upper-panel-wrap { flex: 1 1 50%; }
-  .middle-col.show-lower .lower-panel-wrap {
-    flex: 1 1 50%;
-    margin-top: 20px;
-  }
+  .middle-col.show-lower .lower-panel-wrap { flex: 1 1 50%; margin-top: 20px; }
 
   .upper-panel-wrap .panel,
   .lower-panel-wrap .panel {
@@ -178,6 +202,7 @@
     height: 100%;
   }
 
+  /* ── Upload area ─────────────────────────────────────────────────────────── */
   .upload-area {
     flex: 1;
     display: flex;
@@ -193,10 +218,7 @@
   }
 
   .panel.fixed-ratio .upload-area,
-  .panel.fixed-ratio .result-area {
-    aspect-ratio: 3/4;
-    flex: none;
-  }
+  .panel.fixed-ratio .result-area { aspect-ratio: 3/4; flex: none; }
 
   .upload-area:hover { background: #eeecea; }
 
@@ -204,6 +226,7 @@
     position: absolute; inset: 0;
     opacity: 0; cursor: pointer;
     width: 100%; height: 100%;
+    z-index: 2;
   }
 
   .upload-area img {
@@ -218,6 +241,7 @@
     align-items: center;
     gap: 10px;
     pointer-events: none;
+    z-index: 1;
   }
 
   .upload-icon {
@@ -237,6 +261,26 @@
     padding: 0 16px;
   }
 
+  /* ── Camera button (floats over person upload area) ──────────────────────── */
+  .camera-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 10;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, opacity 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+  .camera-btn:hover { transform: scale(1.1); opacity: 0.9; }
+
+  /* ── Result area ─────────────────────────────────────────────────────────── */
   .result-area {
     aspect-ratio: 3/4;
     display: flex;
@@ -246,8 +290,7 @@
     position: relative;
     overflow: hidden;
   }
-
-  .result-area img { width: 100%; height: 100%; object-fit: cover; }
+  .result-area img { width:100%; height:100%; object-fit:cover; }
 
   .result-placeholder {
     font-family: 'DM Mono', monospace;
@@ -257,34 +300,121 @@
     line-height: 1.8;
   }
 
+  /* ── Stitch loader ───────────────────────────────────────────────────────── */
   .progress-overlay {
     display: none;
     position: absolute; inset: 0;
-    background: rgba(245,244,240,0.92);
+    background: rgba(245,244,240,0.93);
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14px;
+    gap: 18px;
   }
-
   .progress-overlay.visible { display: flex; }
 
-  .spinner {
-    width: 28px; height: 28px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+  /* Needle + thread animation */
+  .stitch-wrap {
+    position: relative;
+    width: 72px;
+    height: 72px;
   }
 
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* Dashed circle that "draws" itself  */
+  .stitch-ring {
+    position: absolute;
+    inset: 0;
+    animation: ring-spin 2.4s linear infinite;
+  }
+  .stitch-ring circle {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.4;
+    stroke-dasharray: 5 4.5;
+    stroke-linecap: round;
+    stroke-dashoffset: 0;
+    animation: dash-appear 2.4s linear infinite;
+  }
+
+  @keyframes ring-spin   { to { transform: rotate(360deg); } }
+  @keyframes dash-appear {
+    0%   { stroke-dashoffset: 200; opacity: 0; }
+    15%  { opacity: 1; }
+    80%  { stroke-dashoffset: 0;   opacity: 1; }
+    100% { stroke-dashoffset: 0;   opacity: 0; }
+  }
+
+  /* Needle that orbits the ring */
+  .needle-orbit {
+    position: absolute;
+    inset: 0;
+    animation: orbit 2.4s linear infinite;
+    transform-origin: 50% 50%;
+  }
+  @keyframes orbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .needle-orbit svg {
+    position: absolute;
+    top: -10px;
+    left: calc(50% - 9px);
+    width: 18px;
+    height: 18px;
+    transform: rotate(180deg);
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,.15));
+  }
+
+  /* Thread tail that follows needle */
+  .thread-tail {
+    position: absolute;
+    inset: 0;
+    animation: orbit 2.4s linear infinite;
+    transform-origin: 50% 50%;
+  }
+  .thread-tail::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    width: 2px;
+    height: 10px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    transform: translateX(-50%);
+    border-radius: 1px;
+  }
+
+  /* Fabric "weave" dots in the centre */
+  .fabric-dots {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .fabric-dots span {
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0;
+    animation: dot-weave 2.4s ease-in-out infinite;
+  }
+  .fabric-dots span:nth-child(1) { animation-delay: 0s; }
+  .fabric-dots span:nth-child(2) { animation-delay: 0.3s; }
+  .fabric-dots span:nth-child(3) { animation-delay: 0.6s; }
+
+  @keyframes dot-weave {
+    0%,100%{ opacity:0; transform: translateY(0); }
+    40%    { opacity:1; transform: translateY(-3px); }
+    70%    { opacity:0.6; transform: translateY(0); }
+  }
 
   .progress-step {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
     color: var(--muted);
+    letter-spacing: 0.3px;
   }
 
+  /* ── Result footer ───────────────────────────────────────────────────────── */
   .result-footer {
     padding: 12px 18px;
     border-top: 1px solid var(--border);
@@ -305,7 +435,6 @@
     cursor: pointer;
     transition: border-color 0.15s;
   }
-
   .variant-thumb.active { border-color: var(--accent); }
 
   .download-btn {
@@ -321,7 +450,6 @@
     white-space: nowrap;
     display: none;
   }
-
   .download-btn:hover { background: var(--bg); }
 
   .cached-badge {
@@ -335,8 +463,8 @@
     border-radius: 20px;
   }
 
-  .controls { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-
+  /* ── Controls ────────────────────────────────────────────────────────────── */
+  .controls     { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
   .controls-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .controls-row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; align-items: end; }
 
@@ -352,10 +480,7 @@
 
   .field-hint { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 6px; }
 
-  /* Green glow on category seg when auto-detected */
-  .category-field.just-detected .seg-control {
-    box-shadow: 0 0 0 2px #c8e6c9;
-  }
+  .category-field.just-detected .seg-control { box-shadow: 0 0 0 2px #c8e6c9; }
 
   .seg-control {
     display: grid;
@@ -364,13 +489,11 @@
     overflow: hidden;
     transition: box-shadow 0.4s;
   }
-
   .seg-control.cat-3  { grid-template-columns: 1fr 1fr 1fr; }
-  .seg-control.size-6 { grid-template-columns: repeat(6, 1fr); }
+  .seg-control.size-6 { grid-template-columns: repeat(6,1fr); }
   .seg-control.num-3  { grid-template-columns: 1fr 1fr 1fr; }
 
   .seg-control input { display: none; }
-
   .seg-control label {
     padding: 8px 0;
     text-align: center;
@@ -382,7 +505,6 @@
     transition: all 0.15s;
     margin: 0; letter-spacing: 0; text-transform: none;
   }
-
   .seg-control label:last-of-type { border-right: none; }
   .seg-control input:checked + label { background: var(--accent); color: white; }
 
@@ -396,7 +518,6 @@
     cursor: pointer;
     user-select: none;
   }
-
   .toggle-label { font-size: 12px; font-family: 'DM Mono', monospace; }
   .toggle-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
@@ -408,9 +529,7 @@
     transition: background 0.2s;
     flex-shrink: 0;
   }
-
   .toggle.on { background: var(--accent); }
-
   .toggle::after {
     content: '';
     position: absolute;
@@ -420,11 +539,9 @@
     top: 3px; left: 3px;
     transition: left 0.2s;
   }
-
   .toggle.on::after { left: 19px; }
 
   .range-wrap { display: flex; align-items: center; gap: 12px; }
-
   input[type="range"] {
     flex: 1;
     -webkit-appearance: none;
@@ -433,7 +550,6 @@
     border-radius: 2px;
     outline: none;
   }
-
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 14px; height: 14px;
@@ -441,14 +557,7 @@
     background: var(--accent);
     cursor: pointer;
   }
-
-  .range-val {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
-    width: 28px;
-    text-align: right;
-  }
+  .range-val { font-family:'DM Mono',monospace; font-size:12px; color:var(--muted); width:28px; text-align:right; }
 
   .run-btn {
     width: 100%;
@@ -463,7 +572,6 @@
     cursor: pointer;
     transition: opacity 0.15s;
   }
-
   .run-btn:hover    { opacity: 0.85; }
   .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -477,25 +585,265 @@
     border: 1px solid #ffd0d0;
     border-radius: var(--radius);
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     CAMERA MODAL
+  ═══════════════════════════════════════════════════════════════════════════ */
+  .modal-bg {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 900;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-bg.open { display: flex; }
+
+  .modal-box {
+    background: var(--surface);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+    animation: modal-in 0.2s ease;
+  }
+  @keyframes modal-in { from { transform: scale(0.96); opacity:0; } to { transform: scale(1); opacity:1; } }
+
+  .modal-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .modal-close {
+    background: none; border: none;
+    cursor: pointer;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    border-radius: 3px;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .modal-close:hover { background: var(--bg); color: var(--text); }
+
+  /* Camera modal sizing */
+  #camera-modal .modal-box { width: 440px; max-width: 95vw; }
+
+  #camera-video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    background: #111;
+  }
+
+  #camera-canvas { display: none; }
+
+  .modal-foot {
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-primary {
+    flex: 1;
+    padding: 10px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+
+  .btn-ghost {
+    padding: 10px 16px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--muted);
+    transition: background 0.15s;
+  }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     WARDROBE MODAL
+  ═══════════════════════════════════════════════════════════════════════════ */
+  #wardrobe-modal .modal-box {
+    width: 720px;
+    max-width: 95vw;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .wardrobe-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .w-tab {
+    flex: 1;
+    padding: 11px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .w-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  .wardrobe-scroll {
+    overflow-y: auto;
+    padding: 20px;
+    flex: 1;
+  }
+
+  .w-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 12px;
+    margin-top: 22px;
+  }
+  .w-section-label:first-child { margin-top: 0; }
+
+  .w-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .w-item {
+    aspect-ratio: 3/4;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    background: var(--bg);
+    transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+  .w-item:hover { border-color: #999; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+  .w-item.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+  .w-item img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .w-item-name {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 5px 7px;
+    background: linear-gradient(to top, rgba(0,0,0,0.62), transparent);
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: white;
+    letter-spacing: 0.3px;
+  }
+
+  .w-item-check {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .w-item.selected .w-item-check { display: flex; }
+
+  .wardrobe-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .w-selection-info {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .w-confirm-btn {
+    padding: 9px 20px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .w-confirm-btn:hover    { opacity: 0.85; }
+  .w-confirm-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 </style>
 </head>
 <body>
 
+<!-- ══════════════════════════════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════════════════════════════ -->
 <header>
   <span class="wordmark">wearit</span>
-  <span class="status-label">
-    <span class="status-dot" id="dot"></span>
-    <span id="status-text">checking...</span>
-  </span>
+  <div class="header-right">
+    <button class="wardrobe-trigger" onclick="openWardrobe()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="2" y="3" width="20" height="18" rx="2"/>
+        <line x1="8"  y1="3"  x2="8"  y2="21"/>
+        <line x1="16" y1="3"  x2="16" y2="21"/>
+        <line x1="2"  y1="9"  x2="22" y2="9"/>
+        <line x1="2"  y1="15" x2="22" y2="15"/>
+      </svg>
+      wardrobe
+    </button>
+    <span class="status-label">
+      <span class="status-dot" id="dot"></span>
+      <span id="status-text">checking...</span>
+    </span>
+  </div>
 </header>
 
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MAIN
+══════════════════════════════════════════════════════════════════════════ -->
 <main>
   <div class="top-grid">
 
-    <!-- Column 1: Person -->
+    <!-- ── Person panel ──────────────────────────────────────────────────── -->
     <div class="panel fixed-ratio">
       <div class="panel-header">person</div>
-      <div class="upload-area">
+      <div class="upload-area" id="person-upload-area">
         <input type="file" accept="image/*" id="person-input">
         <div class="upload-placeholder" id="person-placeholder">
           <div class="upload-icon">
@@ -504,17 +852,25 @@
           <span class="upload-hint">upload photo</span>
         </div>
         <img id="person-preview" style="display:none">
+
+        <!-- Camera button — stops propagation so file-input doesn't fire -->
+        <button class="camera-btn" title="use camera"
+          onclick="event.stopPropagation(); openCamera()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <!-- Column 2: Middle — garment panels -->
+    <!-- ── Middle column ─────────────────────────────────────────────────── -->
     <div class="middle-col" id="middle-col">
 
       <div class="upper-panel-wrap">
         <div class="panel" style="height:100%">
           <div class="panel-header">
             garment
-            <!-- badge group: detecting → auto-detected → category tag -->
             <div style="display:flex;align-items:center;gap:6px">
               <span class="detecting-badge" id="detecting-badge">detecting…</span>
               <span class="detected-badge"  id="detected-badge">auto-detected</span>
@@ -555,7 +911,7 @@
 
     </div>
 
-    <!-- Column 3: Result -->
+    <!-- ── Result panel ───────────────────────────────────────────────────── -->
     <div class="panel fixed-ratio">
       <div class="panel-header">
         result
@@ -564,9 +920,33 @@
       <div class="result-area" id="result-area">
         <div class="result-placeholder" id="result-placeholder">result appears<br>here</div>
         <img id="result-img" style="display:none">
+
+        <!-- ── Stitch progress overlay ──────────────────────────────────── -->
         <div class="progress-overlay" id="progress-overlay">
-          <div class="spinner"></div>
-          <div class="progress-step" id="progress-step">queued</div>
+          <div class="stitch-wrap">
+            <!-- Dashed ring -->
+            <svg class="stitch-ring" viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="28"/>
+            </svg>
+            <!-- Orbiting needle -->
+            <div class="needle-orbit">
+              <svg viewBox="0 0 24 48" fill="none">
+                <!-- Needle shaft -->
+                <rect x="10.5" y="6" width="3" height="32" rx="1.5" fill="var(--accent)"/>
+                <!-- Needle tip -->
+                <path d="M12 40 L10 46 L12 44 L14 46 Z" fill="var(--accent)"/>
+                <!-- Eye hole -->
+                <ellipse cx="12" cy="8" rx="2.5" ry="1.5" fill="white" stroke="var(--accent)" stroke-width="1"/>
+              </svg>
+            </div>
+            <!-- Thread tail trailing the needle -->
+            <div class="thread-tail"></div>
+            <!-- Centre weave dots -->
+            <div class="fabric-dots">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="progress-step" id="progress-step">stitching…</div>
         </div>
       </div>
       <div class="result-footer">
@@ -577,14 +957,14 @@
 
   </div>
 
-  <!-- Controls -->
+  <!-- ── Controls ───────────────────────────────────────────────────────── -->
   <div class="panel">
     <div class="controls">
       <div class="controls-row">
 
         <div class="field category-field" id="category-field">
           <label>category</label>
-          <div class="seg-control cat-3" id="category-seg">
+          <div class="seg-control cat-3">
             <input type="radio" name="category" id="cat-upper"   value="upper"   checked>
             <label for="cat-upper">upper</label>
             <input type="radio" name="category" id="cat-lower"   value="lower">
@@ -598,9 +978,9 @@
           <label>clothing size</label>
           <div class="seg-control size-6">
             <input type="radio" name="size" id="size-xs"  value="XS"><label for="size-xs">XS</label>
-            <input type="radio" name="size" id="size-s"   value="S" ><label for="size-s">S</label>
+            <input type="radio" name="size" id="size-s"   value="S"><label  for="size-s">S</label>
             <input type="radio" name="size" id="size-m"   value="M" checked><label for="size-m">M</label>
-            <input type="radio" name="size" id="size-l"   value="L" ><label for="size-l">L</label>
+            <input type="radio" name="size" id="size-l"   value="L"><label  for="size-l">L</label>
             <input type="radio" name="size" id="size-xl"  value="XL"><label for="size-xl">XL</label>
             <input type="radio" name="size" id="size-xxl" value="XXL"><label for="size-xxl">XXL</label>
           </div>
@@ -645,260 +1025,553 @@
   </div>
 </main>
 
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     CAMERA MODAL
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="camera-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>camera</span>
+      <button class="modal-close" onclick="closeCamera()">&#215;</button>
+    </div>
+    <video id="camera-video" autoplay playsinline muted></video>
+    <canvas id="camera-canvas"></canvas>
+    <div class="modal-foot">
+      <button class="btn-primary" onclick="snapPhoto()">take photo</button>
+      <button class="btn-ghost"   onclick="closeCamera()">cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     WARDROBE MODAL
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="wardrobe-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>wardrobe</span>
+      <button class="modal-close" onclick="closeWardrobe()">&#215;</button>
+    </div>
+
+    <div class="wardrobe-tabs">
+      <button class="w-tab active" onclick="switchTab('women',this)">women</button>
+      <button class="w-tab"        onclick="switchTab('men',this)">men</button>
+    </div>
+
+    <div class="wardrobe-scroll" id="wardrobe-scroll"></div>
+
+    <div class="wardrobe-footer">
+      <span class="w-selection-info" id="w-info">select a garment to preview</span>
+      <button class="w-confirm-btn" id="w-confirm" disabled onclick="confirmWardrobe()">use this garment</button>
+    </div>
+  </div>
+</div>
+
+
 <script>
-  const API = '';
-  let upscaleOn = true;
-  let activeVariants = [];
-  let activeVariantIdx = 0;
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════════════════════ */
+const API = '';
+let upscaleOn        = true;
+let activeVariants   = [];
+let activeVariantIdx = 0;
+let cameraStream     = null;
 
-  const dot        = document.getElementById('dot');
-  const statusText = document.getElementById('status-text');
+// Wardrobe
+let wGender      = 'women';
+let wSelected    = null;   // selected catalogue item
+let wardrobeBlob = null;   // blob stored when CORS fetch succeeds
 
-  // ── health check ──────────────────────────────────────────────────────────
-  async function checkHealth() {
-    try {
-      const r = await fetch(`${API}/health`);
-      if (r.ok) { dot.className = 'status-dot ready'; statusText.textContent = 'ready'; }
-      else throw new Error();
-    } catch {
-      dot.className = 'status-dot error';
-      statusText.textContent = 'offline';
-    }
+const dot        = document.getElementById('dot');
+const statusText = document.getElementById('status-text');
+
+/* ─── Wardrobe catalogue ────────────────────────────────────────────────────
+   Add your own hosted garment images by replacing the `src` URLs below.
+   Each entry: { id, name, category:'upper'|'lower'|'overall', src }
+─────────────────────────────────────────────────────────────────────────── */
+const CATALOGUE = {
+  women: [
+    // upper
+    { id:'wu1', name:'top 1',    category:'upper',   src:'/wardrobe/women/upper/09176_00.jpg' },
+    { id:'wu2', name:'top 2',    category:'upper',   src:'/wardrobe/women/upper/09236_00.jpg' },
+    { id:'wu3', name:'top 3',    category:'upper',   src:'/wardrobe/women/upper/09256_00.jpg' },
+    { id:'wu4', name:'top 4',    category:'upper',   src:'/wardrobe/women/upper/09263_00.jpg' },
+    // overall
+    { id:'wo1', name:'outfit 1', category:'overall', src:'/wardrobe/women/full/image.png' },
+    { id:'wo2', name:'outfit 2', category:'overall', src:'/wardrobe/women/full/person3.jpg' },
+  ],
+  men: [
+    // upper / shirts
+    { id:'mu1', name:'shirt 1',  category:'upper',   src:'/wardrobe/men/shirts/09163_00.jpg' },
+    { id:'mu2', name:'shirt 2',  category:'upper',   src:'/wardrobe/men/shirts/09164_00.jpg' },
+    { id:'mu3', name:'shirt 3',  category:'upper',   src:'/wardrobe/men/shirts/09166_00.jpg' },
+    { id:'mu4', name:'shirt 4',  category:'upper',   src:'/wardrobe/men/shirts/shirt1.jpg' },
+    { id:'mu5', name:'shirt 5',  category:'upper',   src:'/wardrobe/men/shirts/shirt2.webp' },
+    { id:'mu6', name:'shirt 6',  category:'upper',   src:'/wardrobe/men/shirts/shirt3.jpg' },
+    // lower
+    { id:'ml1', name:'pants',    category:'lower',   src:'/wardrobe/men/pants/360_F_1844698522_ZQgPtyTIDLcShd5pOzJM7WbKf7Q0wKaY.jpg' },
+    // suit
+    { id:'ms1', name:'suit',     category:'upper',   src:'/wardrobe/men/suit/suit.jpg' },
+  ],
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEALTH CHECK
+═══════════════════════════════════════════════════════════════════════════ */
+async function checkHealth() {
+  try {
+    const r = await fetch(`${API}/health`);
+    if (r.ok) { dot.className = 'status-dot ready'; statusText.textContent = 'ready'; }
+    else throw new Error();
+  } catch {
+    dot.className = 'status-dot error';
+    statusText.textContent = 'offline';
   }
-  checkHealth();
+}
+checkHealth();
 
-  // ── apply a category to the UI (called by auto-detect & manual click) ────
-  function applyCategory(val, animate = false) {
-    const radio = document.getElementById(`cat-${val}`);
-    if (!radio) return;
+/* ═══════════════════════════════════════════════════════════════════════════
+   CATEGORY HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+function applyCategory(val, animate = false) {
+  const radio = document.getElementById(`cat-${val}`);
+  if (!radio) return;
+  document.querySelectorAll('input[name="category"]').forEach(r => { r.checked = false; });
+  radio.checked = true;
 
-    // Explicitly uncheck all then check target — avoids browser quirks
-    document.querySelectorAll('input[name="category"]').forEach(r => { r.checked = false; });
-    radio.checked = true;
+  const middleCol = document.getElementById('middle-col');
+  const tag       = document.getElementById('upper-tag');
 
-    const middleCol = document.getElementById('middle-col');
-    const tag       = document.getElementById('upper-tag');
-
-    if (val === 'overall') {
-      middleCol.classList.add('show-lower');
-      tag.textContent = 'overall';
-    } else {
-      middleCol.classList.remove('show-lower');
-      tag.textContent = val;
-      document.getElementById('lower-input').value = '';
-      document.getElementById('lower-preview').style.display = 'none';
-      document.getElementById('lower-placeholder').style.display = 'flex';
-    }
-
-    if (animate) {
-      const field = document.getElementById('category-field');
-      field.classList.add('just-detected');
-      setTimeout(() => field.classList.remove('just-detected'), 1800);
-    }
-  }
-
-  // Reliable category reader — iterates instead of using :checked selector
-  function getSelectedCategory() {
-    for (const r of document.querySelectorAll('input[name="category"]')) {
-      if (r.checked) return r.value;
-    }
-    return 'upper';
-  }
-
-  // ── call /detect-category right after garment upload ─────────────────────
-  async function autoDetectCategory(file) {
-    const detectingBadge = document.getElementById('detecting-badge');
-    const detectedBadge  = document.getElementById('detected-badge');
-
-    // Show pulsing "detecting…" badge
-    detectingBadge.classList.add('visible');
-    detectedBadge.classList.remove('visible');
-
-    try {
-      const fd = new FormData();
-      fd.append('garment', file);
-      const res = await fetch(`${API}/detect-category`, { method: 'POST', body: fd });
-      if (!res.ok) throw new Error('detect failed');
-      const { category } = await res.json();
-
-      applyCategory(category, true);
-
-      detectingBadge.classList.remove('visible');
-      detectedBadge.classList.add('visible');
-      // Fade out "auto-detected" badge after 3 s
-      setTimeout(() => detectedBadge.classList.remove('visible'), 3000);
-    } catch {
-      // Silent fallback — just hide the badge, leave category as-is
-      detectingBadge.classList.remove('visible');
-    }
+  if (val === 'overall') {
+    middleCol.classList.add('show-lower');
+    tag.textContent = 'overall';
+  } else {
+    middleCol.classList.remove('show-lower');
+    tag.textContent = val;
+    document.getElementById('lower-input').value = '';
+    document.getElementById('lower-preview').style.display = 'none';
+    document.getElementById('lower-placeholder').style.display = 'flex';
   }
 
-  // ── upload helpers ────────────────────────────────────────────────────────
-  function setupUpload(inputId, previewId, placeholderId, cb) {
-    document.getElementById(inputId).addEventListener('change', function () {
-      const file = this.files[0];
-      if (!file) return;
-      const preview = document.getElementById(previewId);
-      preview.src = URL.createObjectURL(file);
-      preview.style.display = 'block';
-      document.getElementById(placeholderId).style.display = 'none';
-      if (cb) cb(file);
+  if (animate) {
+    const field = document.getElementById('category-field');
+    field.classList.add('just-detected');
+    setTimeout(() => field.classList.remove('just-detected'), 1800);
+  }
+}
+
+function getSelectedCategory() {
+  for (const r of document.querySelectorAll('input[name="category"]')) {
+    if (r.checked) return r.value;
+  }
+  return 'upper';
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AUTO-DETECT
+═══════════════════════════════════════════════════════════════════════════ */
+async function autoDetectCategory(file) {
+  const detectingBadge = document.getElementById('detecting-badge');
+  const detectedBadge  = document.getElementById('detected-badge');
+  detectingBadge.classList.add('visible');
+  detectedBadge.classList.remove('visible');
+  try {
+    const fd = new FormData();
+    fd.append('garment', file);
+    const res = await fetch(`${API}/detect-category`, { method: 'POST', body: fd });
+    if (!res.ok) throw new Error();
+    const { category } = await res.json();
+    applyCategory(category, true);
+    detectingBadge.classList.remove('visible');
+    detectedBadge.classList.add('visible');
+    setTimeout(() => detectedBadge.classList.remove('visible'), 3000);
+  } catch {
+    detectingBadge.classList.remove('visible');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UPLOAD HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+function setPreview(previewId, placeholderId, src) {
+  const p = document.getElementById(previewId);
+  p.src   = src;
+  p.style.display = 'block';
+  document.getElementById(placeholderId).style.display = 'none';
+}
+
+function setupUpload(inputId, previewId, placeholderId, cb) {
+  document.getElementById(inputId).addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    setPreview(previewId, placeholderId, URL.createObjectURL(file));
+    if (cb) cb(file);
+  });
+}
+
+setupUpload('person-input',  'person-preview',  'person-placeholder',  () => checkReady());
+setupUpload('lower-input',   'lower-preview',   'lower-placeholder',   null);
+setupUpload('garment-input', 'garment-preview', 'garment-placeholder', (file) => {
+  wardrobeBlob = null; // manual upload takes precedence
+  checkReady();
+  autoDetectCategory(file);
+});
+
+document.querySelectorAll('input[name="category"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('detected-badge').classList.remove('visible');
+    applyCategory(document.querySelector('input[name="category"]:checked').value);
+  });
+});
+
+/* ─── Middle column height sync ───────────────────────────────────────────── */
+function syncMiddleHeight() {
+  const personPanel = document.querySelector('.panel.fixed-ratio');
+  const middleCol   = document.getElementById('middle-col');
+  if (personPanel && middleCol) middleCol.style.height = personPanel.offsetHeight + 'px';
+}
+window.addEventListener('resize', syncMiddleHeight);
+window.addEventListener('load',   syncMiddleHeight);
+setTimeout(syncMiddleHeight, 100);
+
+/* ─── Misc controls ───────────────────────────────────────────────────────── */
+document.getElementById('steps').addEventListener('input', function () {
+  document.getElementById('steps-val').textContent = this.value;
+});
+
+function toggleUpscale() {
+  upscaleOn = !upscaleOn;
+  document.getElementById('upscale-indicator').className = 'toggle' + (upscaleOn ? ' on' : '');
+}
+
+function checkReady() {
+  const hasPerson  = !!document.getElementById('person-input').files[0]
+                  || document.getElementById('person-preview').style.display !== 'none';
+  const hasGarment = !!document.getElementById('garment-input').files[0]
+                  || document.getElementById('garment-preview').style.display !== 'none';
+  document.getElementById('run-btn').disabled = !(hasPerson && hasGarment);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE 1 — CAMERA CAPTURE
+═══════════════════════════════════════════════════════════════════════════ */
+async function openCamera() {
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 1280 } }
     });
+    document.getElementById('camera-video').srcObject = cameraStream;
+    document.getElementById('camera-modal').classList.add('open');
+  } catch {
+    alert('Camera access denied or unavailable.\nPlease allow camera permissions in your browser.');
   }
+}
 
-  setupUpload('person-input', 'person-preview', 'person-placeholder', () => checkReady());
-  setupUpload('lower-input',  'lower-preview',  'lower-placeholder',  null);
+function closeCamera() {
+  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+  document.getElementById('camera-video').srcObject = null;
+  document.getElementById('camera-modal').classList.remove('open');
+}
 
-  // Garment: show preview + kick off auto-detect
-  setupUpload('garment-input', 'garment-preview', 'garment-placeholder', (file) => {
+function snapPhoto() {
+  const video  = document.getElementById('camera-video');
+  const canvas = document.getElementById('camera-canvas');
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.toBlob(blob => {
+    const file = new File([blob], 'camera.jpg', { type: 'image/jpeg' });
+    const dt   = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('person-input').files = dt.files;
+    setPreview('person-preview', 'person-placeholder', URL.createObjectURL(blob));
     checkReady();
-    autoDetectCategory(file);
+    closeCamera();
+  }, 'image/jpeg', 0.92);
+}
+
+// Close on backdrop click
+document.getElementById('camera-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeCamera();
+});
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE 2 — WARDROBE
+═══════════════════════════════════════════════════════════════════════════ */
+const SECTION_LABELS = { upper:'upper garments', lower:'lower garments', overall:'dresses & full outfits' };
+
+function openWardrobe() {
+  wSelected = null;
+  document.getElementById('w-confirm').disabled = true;
+  document.getElementById('w-info').textContent = 'select a garment to preview';
+  renderWardrobe(wGender);
+  document.getElementById('wardrobe-modal').classList.add('open');
+}
+
+function closeWardrobe() {
+  document.getElementById('wardrobe-modal').classList.remove('open');
+}
+
+function switchTab(gender, btn) {
+  wGender   = gender;
+  wSelected = null;
+  document.getElementById('w-confirm').disabled = true;
+  document.getElementById('w-info').textContent = 'select a garment to preview';
+  document.querySelectorAll('.w-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderWardrobe(gender);
+}
+
+function renderWardrobe(gender) {
+  const scroll = document.getElementById('wardrobe-scroll');
+  scroll.innerHTML = '';
+  const items = CATALOGUE[gender] || [];
+
+  ['upper', 'lower', 'overall'].forEach(cat => {
+    const section = items.filter(i => i.category === cat);
+    if (!section.length) return;
+
+    const label = document.createElement('div');
+    label.className   = 'w-section-label';
+    label.textContent = SECTION_LABELS[cat];
+    scroll.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'w-grid';
+
+    section.forEach(item => {
+      const el = document.createElement('div');
+      el.className    = 'w-item';
+      el.dataset.id   = item.id;
+      el.innerHTML = `
+        <img src="${item.src}" alt="${item.name}" loading="lazy">
+        <div class="w-item-name">${item.name}</div>
+        <div class="w-item-check">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>`;
+      el.addEventListener('click', () => selectWardrobeItem(item, el));
+      grid.appendChild(el);
+    });
+
+    scroll.appendChild(grid);
   });
+}
 
-  // ── manual category change ────────────────────────────────────────────────
-  document.querySelectorAll('input[name="category"]').forEach(r => {
-    r.addEventListener('change', () => {
-      const val = document.querySelector('input[name="category"]:checked').value;
-      // If user overrides manually, hide the auto-detected badge
-      document.getElementById('detected-badge').classList.remove('visible');
-      applyCategory(val);
-    });
-  });
+function selectWardrobeItem(item, el) {
+  document.querySelectorAll('.w-item').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  wSelected = item;
+  document.getElementById('w-confirm').disabled = false;
+  document.getElementById('w-info').textContent = `${item.name}  ·  ${item.category}`;
+}
 
-  // ── sync middle column height to person panel ─────────────────────────────
-  function syncMiddleHeight() {
-    const personPanel = document.querySelector('.panel.fixed-ratio');
-    const middleCol   = document.getElementById('middle-col');
-    if (personPanel && middleCol) {
-      middleCol.style.height = personPanel.offsetHeight + 'px';
-    }
-  }
-  window.addEventListener('resize', syncMiddleHeight);
-  window.addEventListener('load',   syncMiddleHeight);
-  setTimeout(syncMiddleHeight, 100);
+async function confirmWardrobe() {
+  if (!wSelected) return;
+  const item = wSelected;
+  closeWardrobe();
+  wardrobeBlob = null; // reset
 
-  // ── steps slider ──────────────────────────────────────────────────────────
-  document.getElementById('steps').addEventListener('input', function () {
-    document.getElementById('steps-val').textContent = this.value;
-  });
+  try {
+    const resp = await fetch(item.src);
+    if (!resp.ok) throw new Error('fetch failed');
+    const blob = await resp.blob();
+    wardrobeBlob = new File([blob], item.name.replace(/ /g,'_') + '.jpg', { type: 'image/jpeg' });
 
-  // ── upscale toggle ────────────────────────────────────────────────────────
-  function toggleUpscale() {
-    upscaleOn = !upscaleOn;
-    document.getElementById('upscale-indicator').className = 'toggle' + (upscaleOn ? ' on' : '');
-  }
-
-  // ── enable run button when both images are present ────────────────────────
-  function checkReady() {
-    const hasPerson  = !!document.getElementById('person-input').files[0];
-    const hasGarment = !!document.getElementById('garment-input').files[0];
-    document.getElementById('run-btn').disabled = !(hasPerson && hasGarment);
-  }
-
-  // ── variant thumbnails ────────────────────────────────────────────────────
-  function showVariant(idx) {
-    activeVariantIdx = idx;
-    const img = document.getElementById('result-img');
-    img.src = activeVariants[idx].image;
-    img.style.display = 'block';
-    document.getElementById('result-placeholder').style.display = 'none';
-    document.getElementById('download-btn').href  = activeVariants[idx].image;
-    document.getElementById('download-btn').style.display = 'block';
-    document.getElementById('cached-badge').style.display =
-      activeVariants[idx].cached ? 'inline-block' : 'none';
-    document.querySelectorAll('.variant-thumb').forEach((t, i) => {
-      t.className = 'variant-thumb' + (i === idx ? ' active' : '');
-    });
-  }
-
-  function renderVariants() {
-    const container = document.getElementById('result-variants');
-    container.innerHTML = '';
-    if (activeVariants.length <= 1) return;
-    activeVariants.forEach((v, i) => {
-      const img = document.createElement('img');
-      img.src = v.image;
-      img.className = 'variant-thumb' + (i === activeVariantIdx ? ' active' : '');
-      img.onclick = () => showVariant(i);
-      container.appendChild(img);
-    });
-  }
-
-  // ── SSE job polling ───────────────────────────────────────────────────────
-  function pollJob(jobId, index, total) {
-    return new Promise((resolve, reject) => {
-      const es     = new EventSource(`${API}/stream/${jobId}`);
-      const stepEl = document.getElementById('progress-step');
-      es.onmessage = (e) => {
-        const data = JSON.parse(e.data);
-        if (data.status === 'pending') {
-          stepEl.textContent = total > 1 ? `queued (${index+1}/${total})` : 'queued';
-        } else if (data.status === 'processing') {
-          stepEl.textContent = total > 1 ? `${data.step} (${index+1}/${total})` : data.step;
-        } else if (data.status === 'done') {
-          es.close(); resolve({ image: data.image, cached: data.cached });
-        } else if (data.status === 'error') {
-          es.close(); reject(new Error(data.detail || 'inference error'));
-        }
-      };
-      es.onerror = () => { es.close(); reject(new Error('connection lost')); };
-    });
-  }
-
-  // ── run try-on ────────────────────────────────────────────────────────────
-  document.getElementById('run-btn').addEventListener('click', async () => {
-    const runBtn      = document.getElementById('run-btn');
-    const errorMsg    = document.getElementById('error-msg');
-    const overlay     = document.getElementById('progress-overlay');
-    const downloadBtn = document.getElementById('download-btn');
-
-    errorMsg.style.display = 'none';
-    downloadBtn.style.display = 'none';
-    document.getElementById('result-variants').innerHTML = '';
-    document.getElementById('cached-badge').style.display = 'none';
-    overlay.classList.add('visible');
-    runBtn.disabled        = true;
-    dot.className          = 'status-dot loading';
-    statusText.textContent = 'processing...';
-    activeVariants = [];
-
-    const form = new FormData();
-    form.append('person',      document.getElementById('person-input').files[0]);
-    form.append('garment',     document.getElementById('garment-input').files[0]);
-    form.append('category',    getSelectedCategory());
-    form.append('size',        document.querySelector('input[name="size"]:checked').value);
-    form.append('steps',       document.getElementById('steps').value);
-    form.append('num_results', document.querySelector('input[name="num_results"]:checked').value);
-    form.append('use_upscale', upscaleOn ? 'true' : 'false');
-
-    const lowerFile = document.getElementById('lower-input').files[0];
-    if (lowerFile) form.append('lower_garment', lowerFile);
-
+    // Try injecting into the file input (works in Chrome/Edge, may silently fail in Firefox)
     try {
-      const r    = await fetch(`${API}/tryon`, { method: 'POST', body: form });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.detail || 'server error');
+      const dt = new DataTransfer();
+      dt.items.add(wardrobeBlob);
+      document.getElementById('garment-input').files = dt.files;
+    } catch (_) { /* ignore — wardrobeBlob fallback handles it */ }
 
-      for (let i = 0; i < data.job_ids.length; i++) {
-        const result = await pollJob(data.job_ids[i], i, data.job_ids.length);
-        activeVariants.push(result);
-        showVariant(activeVariants.length - 1);
-        renderVariants();
-      }
+    setPreview('garment-preview', 'garment-placeholder', URL.createObjectURL(blob));
+  } catch {
+    // CORS blocked — preview only via img src, wardrobeBlob stays null
+    // We'll re-fetch at submit time using the src URL as a last resort
+    setPreview('garment-preview', 'garment-placeholder', item.src);
+    wardrobeBlob = { _corsItem: item }; // sentinel so we know which item to re-fetch
+  }
 
-      dot.className          = 'status-dot ready';
-      statusText.textContent = 'ready';
-    } catch (err) {
-      errorMsg.textContent   = err.message;
-      errorMsg.style.display = 'block';
-      dot.className          = 'status-dot error';
-      statusText.textContent = 'error';
-    } finally {
-      overlay.classList.remove('visible');
-      runBtn.disabled = false;
-      checkReady();
-    }
+  applyCategory(item.category, true);
+  const db = document.getElementById('detected-badge');
+  db.classList.add('visible');
+  setTimeout(() => db.classList.remove('visible'), 2500);
+  document.getElementById('upper-tag').textContent = item.category;
+  checkReady();
+}
+
+document.getElementById('wardrobe-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeWardrobe();
+});
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VARIANTS
+═══════════════════════════════════════════════════════════════════════════ */
+function showVariant(idx) {
+  activeVariantIdx = idx;
+  const img = document.getElementById('result-img');
+  img.src = activeVariants[idx].image;
+  img.style.display = 'block';
+  document.getElementById('result-placeholder').style.display = 'none';
+  document.getElementById('download-btn').href  = activeVariants[idx].image;
+  document.getElementById('download-btn').style.display = 'block';
+  document.getElementById('cached-badge').style.display =
+    activeVariants[idx].cached ? 'inline-block' : 'none';
+  document.querySelectorAll('.variant-thumb').forEach((t, i) => {
+    t.className = 'variant-thumb' + (i === idx ? ' active' : '');
   });
+}
+
+function renderVariants() {
+  const c = document.getElementById('result-variants');
+  c.innerHTML = '';
+  if (activeVariants.length <= 1) return;
+  activeVariants.forEach((v, i) => {
+    const img = document.createElement('img');
+    img.src       = v.image;
+    img.className = 'variant-thumb' + (i === activeVariantIdx ? ' active' : '');
+    img.onclick   = () => showVariant(i);
+    c.appendChild(img);
+  });
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE 3 — STITCH LOADER + SSE POLLING
+   (step labels mapped to friendly copy)
+═══════════════════════════════════════════════════════════════════════════ */
+const STEP_COPY = {
+  'loading model':      'loading model…',
+  'preprocessing':      'preparing fabric…',
+  'running inference':  'stitching outfit…',
+  'upscaling':          'finishing details…',
+  'encoding result':    'almost done…',
+  'queued':             'in queue…',
+};
+
+function friendlyStep(raw) { return STEP_COPY[raw] || raw + '…'; }
+
+function pollJob(jobId, index, total) {
+  return new Promise((resolve, reject) => {
+    const es     = new EventSource(`${API}/stream/${jobId}`);
+    const stepEl = document.getElementById('progress-step');
+    es.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      const suffix = total > 1 ? ` (${index+1}/${total})` : '';
+      if      (data.status === 'pending')    stepEl.textContent = 'in queue…' + suffix;
+      else if (data.status === 'processing') stepEl.textContent = friendlyStep(data.step) + suffix;
+      else if (data.status === 'done')  { es.close(); resolve({ image: data.image, cached: data.cached }); }
+      else if (data.status === 'error') { es.close(); reject(new Error(data.detail || 'inference error')); }
+    };
+    es.onerror = () => { es.close(); reject(new Error('connection lost')); };
+  });
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RUN TRY-ON
+═══════════════════════════════════════════════════════════════════════════ */
+document.getElementById('run-btn').addEventListener('click', async () => {
+  const runBtn      = document.getElementById('run-btn');
+  const errorMsg    = document.getElementById('error-msg');
+  const overlay     = document.getElementById('progress-overlay');
+  const downloadBtn = document.getElementById('download-btn');
+
+  errorMsg.style.display = 'none';
+  downloadBtn.style.display = 'none';
+  document.getElementById('result-variants').innerHTML = '';
+  document.getElementById('cached-badge').style.display = 'none';
+  document.getElementById('result-img').style.display = 'none';
+  document.getElementById('result-placeholder').style.display = 'none';
+  document.getElementById('progress-step').textContent = 'stitching…';
+  overlay.classList.add('visible');
+  runBtn.disabled        = true;
+  dot.className          = 'status-dot loading';
+  statusText.textContent = 'processing...';
+  activeVariants         = [];
+
+  const personFile  = document.getElementById('person-input').files[0];
+  let   garmentFile = document.getElementById('garment-input').files[0];
+
+  // If file-input is empty (DataTransfer injection failed or CORS fallback),
+  // use the blob we cached from the wardrobe selection instead.
+  if (!garmentFile && wardrobeBlob) {
+    if (wardrobeBlob._corsItem) {
+      // Last-resort re-fetch for CORS-blocked items
+      try {
+        const resp = await fetch(wardrobeBlob._corsItem.src);
+        const blob = await resp.blob();
+        garmentFile = new File([blob],
+          wardrobeBlob._corsItem.name.replace(/ /g,'_') + '.jpg',
+          { type: 'image/jpeg' });
+      } catch {
+        errorMsg.textContent   = 'could not load wardrobe garment — please upload manually';
+        errorMsg.style.display = 'block';
+        overlay.classList.remove('visible');
+        runBtn.disabled = false;
+        checkReady();
+        return;
+      }
+    } else {
+      garmentFile = wardrobeBlob;
+    }
+  }
+
+  if (!personFile || !garmentFile) {
+    errorMsg.textContent   = 'please upload both a person photo and a garment image';
+    errorMsg.style.display = 'block';
+    overlay.classList.remove('visible');
+    runBtn.disabled = false;
+    checkReady();
+    return;
+  }
+
+  const form = new FormData();
+  form.append('person',      personFile);
+  form.append('garment',     garmentFile);
+  form.append('category',    getSelectedCategory());
+  form.append('size',        document.querySelector('input[name="size"]:checked').value);
+  form.append('steps',       document.getElementById('steps').value);
+  form.append('num_results', document.querySelector('input[name="num_results"]:checked').value);
+  form.append('use_upscale', upscaleOn ? 'true' : 'false');
+
+  const lowerFile = document.getElementById('lower-input').files[0];
+  if (lowerFile) form.append('lower_garment', lowerFile);
+
+  try {
+    const r    = await fetch(`${API}/tryon`, { method: 'POST', body: form });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'server error');
+
+    for (let i = 0; i < data.job_ids.length; i++) {
+      const result = await pollJob(data.job_ids[i], i, data.job_ids.length);
+      activeVariants.push(result);
+      showVariant(activeVariants.length - 1);
+      renderVariants();
+    }
+
+    dot.className          = 'status-dot ready';
+    statusText.textContent = 'ready';
+  } catch (err) {
+    errorMsg.textContent   = err.message;
+    errorMsg.style.display = 'block';
+    document.getElementById('result-placeholder').style.display = 'block';
+    dot.className          = 'status-dot error';
+    statusText.textContent = 'error';
+  } finally {
+    overlay.classList.remove('visible');
+    runBtn.disabled = false;
+    checkReady();
+  }
+});
 </script>
 </body>
 </html>

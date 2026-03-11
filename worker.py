@@ -207,7 +207,7 @@ def tryon_task(
 
     self.update_state(state="PROGRESS", meta={"step": "running inference"})
 
-    if category == "overall" and lower_b64:
+    if category == "overall" and lower_b64: 
         lower_img = b64_to_image(lower_b64)
         lower_clean = remove_background(lower_img)
         lower = resize_and_padding(apply_size_scaling(lower_clean, size), (WIDTH, HEIGHT))
